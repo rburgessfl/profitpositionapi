@@ -14,7 +14,6 @@ public class QuoteRequest {
     RestTemplate restTemplate;
 
     public String apiKey = System.getProperty("api_key");
-    public String QuotePackage;
 
     public String fetch(String ticker) throws IOException{
         ResponseEntity<String> response = restTemplate.getForEntity(
