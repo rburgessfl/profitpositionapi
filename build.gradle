@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'net.profitposition'
-version = '1.0'
+version = '1.2'
 sourceCompatibility = '15'
 
 repositories {
