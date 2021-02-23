@@ -25,10 +25,14 @@ public class RequestHandler {
     public String lastRefreshed;
     public String atr;
     public String atrData;
-    public String atrValues;
+    public String atrValue;
     public String bbands;
     public String bbandsData;
-    public String bbandsValue;
+    public String upperBband;
+    public String middleBband;
+    public String lowerBband;
+    public String bbandsValues;
+    public String bbandsPackage;
 
     public String getCompanyOverview(String symbol) throws IOException{
         ResponseEntity<String> response = restTemplate.getForEntity(
@@ -76,8 +80,8 @@ public class RequestHandler {
         lastRefreshed = String.valueOf(node1.get("3: Last Refreshed"));
         atrData = String.valueOf(node.get("Technical Analysis: ATR"));
         ObjectNode node2 = mapper.readValue(atrData, ObjectNode.class);
-        atrValues = String.valueOf(node2.get(lastRefreshed.substring(1,11)));
-        return atrValues;
+        atrValue = String.valueOf(node2.get(lastRefreshed.substring(1,11)));
+        return atrValue;
     }
 
     public String getBbands(String symbol) throws IOException{
@@ -91,8 +95,14 @@ public class RequestHandler {
         lastRefreshed = String.valueOf(node1.get("3: Last Refreshed"));
         bbandsData = String.valueOf(node.get("Technical Analysis: BBANDS"));
         ObjectNode node2 = mapper.readValue(bbandsData, ObjectNode.class);
-        bbandsValue = String.valueOf(node2.get(lastRefreshed.substring(1,11)));
-        return bbandsValue;
+        bbandsValues = String.valueOf(node2.get(lastRefreshed.substring(1,11)));
+        ObjectNode node3 = mapper.readValue(bbandsValues, ObjectNode.class);
+        upperBband = String.valueOf(node3.get("Real Upper Band"));
+        middleBband = String.valueOf(node3.get("Real Middle Band"));
+        lowerBband = String.valueOf(node3.get("Real Lower Band"));
+        bbandsPackage = "{\"Upper Bollinger Band\":"+upperBband+",\"Middle Bollinger Band\":"+middleBband+",\"Lower Bollinger Band\":"+lowerBband+"}";
+
+        return bbandsPackage;
     }
 
 }
