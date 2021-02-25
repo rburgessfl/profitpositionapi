@@ -16,93 +16,146 @@ public class RequestHandler {
     RestTemplate restTemplate;
 
     public String apiKey = System.getProperty("apikey");
-    public String companyOverview;
-    public String incomeStatement;
-    public String balanceSheetStatement;
-    public String cashFlowStatement;
-    public String quote;
-    public String metaData;
-    public String lastRefreshed;
+    public String apiKey2 = System.getProperty("apikey2");
     public String atr;
     public String atrData;
     public String atrValue;
     public String bbands;
     public String bbandsData;
-    public String upperBband;
-    public String middleBband;
-    public String lowerBband;
     public String bbandsValues;
-    public String bbandsPackage;
+    public String dcf;
+    public String dcfValue;
+    public String companyProfile;
+    public String companyProfileValue;
+    public String financialRatios;
+    public String financialRatiosValues;
+    public String incomeStatements;
+    public String balanceSheetStatements;
+    public String cashFlowStatements;
+    public String incomeStatementsGrowth;
+    public String balanceSheetStatementsGrowth;
+    public String cashFlowStatementsGrowth;
 
-    public String getCompanyOverview(String symbol) throws IOException{
-        ResponseEntity<String> response = restTemplate.getForEntity(
-                ("https://www.alphavantage.co/query?function=OVERVIEW&symbol="+symbol+"&apikey="+ apiKey), String.class);
-        companyOverview = response.getBody();
-        return companyOverview;
-    }
+    public String getDataPackage(String symbol) throws IOException{
+        String a = getCompanyProfile(symbol);
+        String b = getDcf(symbol);
+        String c = getBbands(symbol);
+        String d = getAtr(symbol);
+        String e = getFinancialRatios(symbol);
+        String f = getIncomeStatement(symbol);
+        String g = getBalanceSheetStatement(symbol);
+        String h = getCashFlowStatement(symbol);
+        String i = getIncomeStatementGrowth(symbol);
+        String j = getBalanceSheetStatementGrowth(symbol);
+        String k = getCashFlowStatementGrowth(symbol);
 
-    public String getIncomeStatement(String symbol) throws IOException{
-        ResponseEntity<String> response = restTemplate.getForEntity(
-                ("https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol="+symbol+"&apikey="+ apiKey), String.class);
-        incomeStatement = response.getBody();
-        return incomeStatement;
-    }
-
-    public String getBalanceSheet(String symbol) throws IOException{
-        ResponseEntity<String> response = restTemplate.getForEntity(
-                ("https://www.alphavantage.co/query?function=BALANCE_SHEET&symbol="+symbol+"&apikey="+ apiKey), String.class);
-        balanceSheetStatement = response.getBody();
-        return balanceSheetStatement;
-    }
-
-    public String getCashFlow(String symbol) throws IOException{
-        ResponseEntity<String> response = restTemplate.getForEntity(
-                ("https://www.alphavantage.co/query?function=CASH_FLOW&symbol="+symbol+"&apikey="+ apiKey), String.class);
-        cashFlowStatement = response.getBody();
-        return cashFlowStatement;
-    }
-
-    public String getQuote(String symbol) throws IOException{
-        ResponseEntity<String> response = restTemplate.getForEntity(
-                ("https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol="+symbol+"&apikey="+ apiKey), String.class);
-        quote = response.getBody();
-        return quote;
+        return "["+a+","+b+","+c+","+d+","+e+","+f+","+g+","+h+","+i+","+j+","+k+"]";
     }
 
     public String getAtr(String symbol) throws IOException{
         ResponseEntity<String> response = restTemplate.getForEntity(
-                ("https://www.alphavantage.co/query?function=ATR&symbol="+symbol+"&interval=daily&time_period=14&datatype=json&apikey="+ apiKey), String.class);
+                ("https://api.twelvedata.com/atr?interval=1day&time_period=14&outputsize=1&symbol="+symbol+"&apikey="+apiKey), String.class);
         atr = response.getBody();
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode node = mapper.readValue(atr, ObjectNode.class);
-        metaData = String.valueOf(node.get("Meta Data"));
-        ObjectNode node1 = mapper.readValue(metaData, ObjectNode.class);
-        lastRefreshed = String.valueOf(node1.get("3: Last Refreshed"));
-        atrData = String.valueOf(node.get("Technical Analysis: ATR"));
-        ObjectNode node2 = mapper.readValue(atrData, ObjectNode.class);
-        atrValue = String.valueOf(node2.get(lastRefreshed.substring(1,11)));
+        atrData = String.valueOf(node.get("values"));
+        ObjectNode[] node1 = mapper.readValue(atrData, ObjectNode[].class);
+        System.out.println("Symbol: "+symbol+" - Average True Range");
+        atrValue = String.valueOf(node1[0]);
         return atrValue;
     }
 
     public String getBbands(String symbol) throws IOException{
         ResponseEntity<String> response = restTemplate.getForEntity(
-                ("https://www.alphavantage.co/query?function=BBANDS&symbol="+symbol+"&interval=daily&time_period=20&series_type=close&matype=0&nbdevup=2&nbdevdn=2&apikey="+ apiKey), String.class);
+                ("https://api.twelvedata.com/bbands?interval=1day&ma_type=SMA&outputsize=1&sd=2&time_period=20&symbol="+symbol+"&apikey="+apiKey), String.class);
         bbands = response.getBody();
         ObjectMapper mapper = new ObjectMapper();
         ObjectNode node = mapper.readValue(bbands, ObjectNode.class);
-        metaData = String.valueOf(node.get("Meta Data"));
-        ObjectNode node1 = mapper.readValue(metaData, ObjectNode.class);
-        lastRefreshed = String.valueOf(node1.get("3: Last Refreshed"));
-        bbandsData = String.valueOf(node.get("Technical Analysis: BBANDS"));
-        ObjectNode node2 = mapper.readValue(bbandsData, ObjectNode.class);
-        bbandsValues = String.valueOf(node2.get(lastRefreshed.substring(1,11)));
-        ObjectNode node3 = mapper.readValue(bbandsValues, ObjectNode.class);
-        upperBband = String.valueOf(node3.get("Real Upper Band"));
-        middleBband = String.valueOf(node3.get("Real Middle Band"));
-        lowerBband = String.valueOf(node3.get("Real Lower Band"));
-        bbandsPackage = "{\"Upper Bollinger Band\":"+upperBband+",\"Middle Bollinger Band\":"+middleBband+",\"Lower Bollinger Band\":"+lowerBband+"}";
+        bbandsData = String.valueOf(node.get("values"));
+        ObjectNode[] node1 = mapper.readValue(bbandsData, ObjectNode[].class);
+        System.out.println("Symbol: "+symbol+" - Bollinger Bands");
+        bbandsValues = String.valueOf(node1[0]);
+        return bbandsValues;
+    }
 
-        return bbandsPackage;
+    public String getDcf(String symbol) throws IOException{
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                ("https://financialmodelingprep.com/api/v3/discounted-cash-flow/"+symbol+"?apikey="+apiKey2), String.class);
+        dcf = response.getBody();
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode[] node = mapper.readValue(dcf, ObjectNode[].class);
+        System.out.println("Symbol: "+symbol+" - Discounted Cash Flow");
+        dcfValue = String.valueOf(node[0]);
+        return dcfValue;
+    }
+
+    public String getCompanyProfile(String symbol) throws IOException{
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                ("https://financialmodelingprep.com/api/v3/profile/"+symbol+"?apikey="+apiKey2), String.class);
+        companyProfile = response.getBody();
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode[] node = mapper.readValue(companyProfile, ObjectNode[].class);
+        System.out.println("Symbol: "+symbol+" - Company Profile");
+        companyProfileValue = String.valueOf(node[0]);
+        return companyProfileValue;
+    }
+
+    public String getFinancialRatios(String symbol) throws IOException{
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                ("https://financialmodelingprep.com/api/v3/ratios-ttm/"+symbol+"?apikey="+apiKey2), String.class);
+        financialRatios = response.getBody();
+        ObjectMapper mapper = new ObjectMapper();
+        ObjectNode[] node = mapper.readValue(financialRatios, ObjectNode[].class);
+        System.out.println("Symbol: "+symbol+" - Financial Ratios");
+        financialRatiosValues = String.valueOf(node[0]);
+        return financialRatiosValues;
+    }
+
+    public String getIncomeStatement(String symbol) throws IOException{
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                ("https://financialmodelingprep.com/api/v3/income-statement/"+symbol+"?period=annual&limit=5&apikey="+apiKey2), String.class);
+        incomeStatements = response.getBody();
+        System.out.println("Symbol: "+symbol+" - Income Statement");
+        return incomeStatements;
+    }
+
+    public String getBalanceSheetStatement(String symbol) throws IOException{
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                ("https://financialmodelingprep.com/api/v3/balance-sheet-statement/"+symbol+"?period=annual&limit=5&apikey="+apiKey2), String.class);
+        balanceSheetStatements = response.getBody();
+        System.out.println("Symbol: "+symbol+" - Balance Sheet Statements");
+        return balanceSheetStatements;
+    }
+
+    public String getCashFlowStatement(String symbol) throws IOException{
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                ("https://financialmodelingprep.com/api/v3/cash-flow-statement/"+symbol+"?period=annual&limit=5&apikey="+apiKey2), String.class);
+        cashFlowStatements = response.getBody();
+        System.out.println("Symbol: "+symbol+" - Cash Flow Statements");
+        return cashFlowStatements;
+    }
+    public String getIncomeStatementGrowth(String symbol) throws IOException{
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                ("https://financialmodelingprep.com/api/v3/income-statement-growth/"+symbol+"?period=annual&limit=5&apikey="+apiKey2), String.class);
+        incomeStatementsGrowth = response.getBody();
+        System.out.println("Symbol: "+symbol+" - Income Statement Growth");
+        return incomeStatementsGrowth;
+    }
+
+    public String getBalanceSheetStatementGrowth(String symbol) throws IOException{
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                ("https://financialmodelingprep.com/api/v3/balance-sheet-statement-growth/"+symbol+"?period=annual&limit=5&apikey="+apiKey2), String.class);
+        balanceSheetStatementsGrowth = response.getBody();
+        System.out.println("Symbol: "+symbol+" - Balance Sheet Statements Growth");
+        return balanceSheetStatementsGrowth;
+    }
+
+    public String getCashFlowStatementGrowth(String symbol) throws IOException{
+        ResponseEntity<String> response = restTemplate.getForEntity(
+                ("https://financialmodelingprep.com/api/v3/cash-flow-statement-growth/"+symbol+"?period=annual&limit=5&apikey="+apiKey2), String.class);
+        cashFlowStatementsGrowth = response.getBody();
+        System.out.println("Symbol: "+symbol+" - Cash Flow Statements Growth");
+        return cashFlowStatementsGrowth;
     }
 
 }
